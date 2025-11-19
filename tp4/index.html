@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulaire avec Géolocalisation</title>
+    <link rel="stylesheet" href="css/bootstrap.css" />
+    <style>
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle, #a0c4ff 0%, #ffafcc 100%);
+            background-size: 200% 200%;
+            animation: gradientAnimation 10s ease infinite;
+            padding: 20px;
+        }
+
+        @keyframes gradientAnimation {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 800px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        h2 {
+            color: #495057;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        label {
+            color: #495057;
+            font-weight: 500;
+        }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.8);
+            border: none;
+            border-radius: 10px;
+            color: #495057;
+            padding: 10px 15px;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-control::placeholder {
+            color: rgba(73, 80, 87, 0.6);
+        }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 1);
+            color: #495057;
+            outline: none;
+            box-shadow: 0 0 10px rgba(160, 196, 255, 0.7);
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #a0c4ff, #ffafcc);
+            border: none;
+            padding: 10px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(90deg, #6c757d, #adb5bd);
+            border: none;
+            padding: 10px 20px;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            color: #fff;
+        }
+
+        .text-danger {
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+
+        .char-count {
+            font-size: 0.8em;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        #map {
+            margin-top: 15px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        table {
+            margin-top: 20px;
+        }
+
+        @media (max-width: 576px) {
+            .form-container {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="form-container">
+        <h2>Formulaire d'inscription avec Géolocalisation</h2>
+
+        <!-- Formulaire principal -->
+        <form id="myForm" class="row g-3" novalidate>
+            <!-- Nom -->
+            <div class="col-md-3"><label for="name" class="form-label">Nom</label></div>
+            <div class="col-md-9">
+                <input type="text" class="form-control" id="name" required autofocus onkeyup="calcNbChar(this.id)">
+                <div class="text-danger" id="nameError"></div>
+                <div class="char-count" data-count-name>0 car.</div>
+            </div>
+
+            <!-- Prénom -->
+            <div class="col-md-3"><label for="firstname" class="form-label">Prénom</label></div>
+            <div class="col-md-9">
+                <input type="text" class="form-control" id="firstname" required onkeyup="calcNbChar(this.id)">
+                <div class="text-danger" id="firstnameError"></div>
+                <div class="char-count" data-count-firstname>0 car.</div>
+            </div>
+
+            <!-- Date de naissance -->
+            <div class="col-md-3"><label for="birth" class="form-label">Date de naissance</label></div>
+            <div class="col-md-9">
+                <input type="date" class="form-control" id="birth" required>
+                <div class="text-danger" id="birthError"></div>
+            </div>
+
+            <!-- Adresse avec bouton GPS -->
+            <div class="col-md-3"><label for="adresse" class="form-label">Adresse</label></div>
+            <div class="col-md-7">
+                <input type="text" class="form-control" id="adresse" placeholder="Ville, Rue..." required
+                    onkeyup="calcNbChar(this.id)">
+                <div class="text-danger" id="adresseError"></div>
+                <div class="char-count" data-count-adresse>0 car.</div>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="button" class="btn btn-secondary w-100" id="gps">GPS</button>
+            </div>
+
+            <!-- Carte OpenStreetMap -->
+            <div class="col-md-3"></div>
+            <div class="col-md-9">
+                <div id="map"></div>
+            </div>
+
+            <!-- Email -->
+            <div class="col-md-3"><label for="mail" class="form-label">Email</label></div>
+            <div class="col-md-9">
+                <input type="email" class="form-control" id="mail" required onkeyup="calcNbChar(this.id)">
+                <div class="text-danger" id="mailError"></div>
+                <div class="char-count" data-count-mail>0 car.</div>
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="col-12 text-center mt-3">
+                <button type="submit" class="btn btn-primary btn-lg">Ajouter</button>
+                <button type="button" class="btn btn-secondary btn-lg ms-2" id="reset">Reset</button>
+            </div>
+        </form>
+
+        <!-- Tableau des contacts -->
+        <div class="mt-5">
+            <h3>Liste des contacts</h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Prénom</th>
+                        <th>Date de naissance</th>
+                        <th>Adresse</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Les contacts seront affichés ici dynamiquement -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal Bootstrap -->
+    <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Résultat</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/bootstrap.bundle.js"></script>
+    <script src="js/gps.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/form-validation.js"></script>
+</body>
+
+</html>

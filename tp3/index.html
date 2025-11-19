@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulaire Stylé Clair</title>
+    <link rel="stylesheet" href="css/bootstrap.css" />
+    <style>
+        /* Background radial animé clair */
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle, #a0c4ff 0%, #ffafcc 100%);
+            background-size: 200% 200%;
+            animation: gradientAnimation 10s ease infinite;
+        }
+
+        @keyframes gradientAnimation {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Form container glassmorphism clair */
+        .form-container {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 600px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        h2 {
+            color: #495057;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        label {
+            color: #495057;
+            font-weight: 500;
+        }
+
+        /* Inputs stylés clairs */
+        .form-control {
+            background: rgba(255, 255, 255, 0.8);
+            border: none;
+            border-radius: 10px;
+            color: #495057;
+            padding: 10px 15px;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-control::placeholder {
+            color: rgba(73, 80, 87, 0.6);
+        }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 1);
+            color: #495057;
+            outline: none;
+            box-shadow: 0 0 10px rgba(160, 196, 255, 0.7);
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #a0c4ff, #ffafcc);
+            border: none;
+            padding: 10px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .text-danger {
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+
+        /* Modal styling */
+        .modal-content {
+            border-radius: 15px;
+        }
+
+        .modal-header {
+            background: linear-gradient(90deg, #a0c4ff, #ffafcc);
+            color: #fff;
+            border-bottom: none;
+        }
+
+        .modal-footer .btn-primary {
+            background: linear-gradient(90deg, #a0c4ff, #ffafcc);
+        }
+
+        /* Responsive */
+        @media (max-width: 576px) {
+            .form-container {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="form-container">
+        <h2>Formulaire d'inscription</h2>
+        <form id="myForm" class="row g-3" novalidate>
+            <div class="col-md-3"><label for="lastname" class="form-label">Nom</label></div>
+            <div class="col-md-9"><input type="text" class="form-control" id="lastname" required>
+                <div class="text-danger" id="lastnameError"></div>
+            </div>
+
+            <div class="col-md-3"><label for="firstname" class="form-label">Prénom</label></div>
+            <div class="col-md-9"><input type="text" class="form-control" id="firstname" required>
+                <div class="text-danger" id="firstnameError"></div>
+            </div>
+
+            <div class="col-md-3"><label for="birthday" class="form-label">Date de naissance</label></div>
+            <div class="col-md-9"><input type="date" class="form-control" id="birthday" required>
+                <div class="text-danger" id="birthdayError"></div>
+            </div>
+
+            <div class="col-md-3"><label for="address" class="form-label">Adresse</label></div>
+            <div class="col-md-9"><input type="text" class="form-control" id="address" placeholder="Ville, Rue..."
+                    required>
+                <div class="text-danger" id="addressError"></div>
+            </div>
+
+            <div class="col-md-3"><label for="email" class="form-label">Email</label></div>
+            <div class="col-md-9"><input type="email" class="form-control" id="email" required>
+                <div class="text-danger" id="emailError"></div>
+            </div>
+
+            <div class="col-12 text-center mt-3"><button type="submit" class="btn btn-primary btn-lg">Envoyer</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Modal Bootstrap -->
+    <div class="modal fade" id="myModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Résultat</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/bootstrap.bundle.js"></script>
+    <script src="js/form-validation.js"></script>
+</body>
+
+</html>

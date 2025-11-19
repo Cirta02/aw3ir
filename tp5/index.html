@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Application Météo Compacte</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="css/bootstrap.css" />
+    <link rel="stylesheet" href="css/weather-icons.min.css" />
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <style>
+        body {
+            background: #e6f2ff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        h1 {
+            color: #007bff;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            font-size: 1.8rem;
+        }
+
+        /* Formulaire recherche ville */
+        .input-group .form-control {
+            border-radius: 1.5rem;
+            border: 1px solid #ccc;
+            padding: 0.4rem 1rem;
+        }
+
+        .input-group .btn {
+            border-radius: 1.5rem;
+            background: #007bff;
+            border: none;
+            font-size: 0.9rem;
+        }
+
+        .input-group .btn:hover {
+            background: #0056b3;
+        }
+
+        /* Liste des villes */
+        .list-group-item {
+            border-radius: 0.5rem;
+            margin-bottom: 0.3rem;
+            transition: 0.2s;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 0.95rem;
+            padding: 0.5rem 1rem;
+        }
+
+        .list-group-item:hover {
+            background-color: #d0e7ff;
+        }
+
+        /* Bouton supprimer */
+        .btn-remove {
+            background-color: #dc3545;
+            color: #fff;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            padding: 0;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .btn-remove:hover {
+            background-color: #c82333;
+            transform: scale(1.2);
+        }
+
+        /* Carte Leaflet */
+        #map {
+            height: 250px;
+            width: 100%;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            margin-bottom: 0.8rem;
+        }
+
+        /* Carte météo */
+        .card {
+            border-radius: 1rem;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.95);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-align: center;
+            padding: 0.5rem 1rem;
+        }
+
+        /* Icônes météo */
+        .weather-icon {
+            font-size: 3.5rem;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Statistiques */
+        .stat-icon {
+            font-size: 1.6rem;
+            color: #007bff;
+            margin-bottom: 0.2rem;
+        }
+
+        .card-footer small {
+            font-size: 0.8rem;
+            color: #555;
+        }
+
+        .alert {
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="weatherApp" class="container mt-3" style="max-width: 600px;">
+        <h1>🌤️ Météo</h1>
+
+        <!-- Formulaire recherche ville -->
+        <form v-on:submit="addCity" class="mb-3">
+            <div class="input-group">
+                <input type="search" class="form-control" v-model="formCityName"
+                    placeholder="Entrez le nom d'une ville..." required />
+                <button class="btn btn-primary" type="submit">Rechercher</button>
+            </div>
+            <small class="text-small">{{ formCityName.length }} caractères</small>
+            <div class="alert alert-danger mt-2" role="alert" v-if='messageForm != ""'>
+                {{ messageForm }}
+            </div>
+        </form>
+
+        <!-- Liste des villes -->
+        <div class="mb-3">
+            <h5>Villes ({{ cityList.length }})</h5>
+            <ul class="list-group">
+                <li v-for="city in cityList" class="list-group-item d-flex justify-content-between align-items-center"
+                    @click="meteo(city)">
+                    {{ city.name }}
+                    <button v-on:click.stop="remove(city)" class="btn-remove" title="Supprimer ville">&times;</button>
+                </li>
+            </ul>
+
+            <div class="alert alert-primary mt-2" role="alert" v-if="cityList.length == 0">
+                Aucune ville saisie!
+            </div>
+        </div>
+
+        <!-- Chargement -->
+        <div v-if="cityWeatherLoading" class="alert alert-info text-center">
+            <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+            Chargement...
+        </div>
+
+        <!-- Message -->
+        <div v-if="message && !cityWeather" class="alert alert-warning">
+            {{ message }}
+        </div>
+
+        <!-- Affichage météo -->
+        <div v-if="cityWeather">
+            <div class="card">
+                <div class="card-header">
+                    {{ cityWeather.name }}, {{ cityWeather.sys.country }}
+                </div>
+
+                <!-- Carte Leaflet -->
+                <div id="map"></div>
+
+                <div class="card-body">
+                    <div class="row align-items-center mb-2">
+                        <div class="col-4 text-center">
+                            <i :class="'wi wi-owm-' + cityWeather.weather[0].id + ' weather-icon'"></i>
+                        </div>
+                        <div class="col-8">
+                            <h3 class="card-title mb-1">{{ Math.round(cityWeather.main.temp) }}°C</h3>
+                            <p class="card-text text-capitalize">{{ cityWeather.weather[0].description }}</p>
+                        </div>
+                    </div>
+
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <i class="wi wi-humidity stat-icon"></i><br>
+                            <strong>{{ cityWeather.main.humidity }}%</strong><br>
+                            <small>Humidité</small>
+                        </div>
+                        <div class="col-4">
+                            <i class="wi wi-strong-wind stat-icon"></i><br>
+                            <strong>{{ Math.round(cityWeather.wind.speed * 3.6) }} km/h</strong><br>
+                            <small>Vent</small>
+                        </div>
+                        <div class="col-4">
+                            <i class="wi wi-barometer stat-icon"></i><br>
+                            <strong>{{ cityWeather.main.pressure }} hPa</strong><br>
+                            <small>Pression</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer text-center">
+                    <div class="row">
+                        <div class="col-6">
+                            <i class="wi wi-sunrise stat-icon"></i><br>
+                            <small>{{ new Date(cityWeather.sys.sunrise *
+                                1000).toLocaleTimeString('fr-FR',{hour:'2-digit', minute:'2-digit'}) }}</small>
+                        </div>
+                        <div class="col-6">
+                            <i class="wi wi-sunset stat-icon"></i><br>
+                            <small>{{ new Date(cityWeather.sys.sunset *
+                                1000).toLocaleTimeString('fr-FR',{hour:'2-digit', minute:'2-digit'}) }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS -->
+    <script src="js/libs/vue.js"></script>
+    <script src="js/libs/bootstrap.bundle.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/main.js"></script>
+</body>
+
+</html>
