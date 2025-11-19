@@ -1,0 +1,9 @@
+/* Styles globaux pour l'application */
+:host {
+    display: block;
+    min-height: 100vh;
+}
+
+.container {
+    flex: 1;
+}

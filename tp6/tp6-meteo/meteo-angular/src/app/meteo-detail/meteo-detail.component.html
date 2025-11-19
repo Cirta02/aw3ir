@@ -1,0 +1,81 @@
+<!-- Météo actuelle - Dates formatées -->
+<div *ngIf="currentWeather && !loading" class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    {{ currentWeather.name }}, {{ currentWeather.sys.country }}
+                </h4>
+                <!-- Date formatée selon l'exemple -->
+                <small>{{ currentWeather.dt * 1000 | date:'EEEE d LLLL HH:mm' }}</small>
+            </div>
+            <div class="card-body text-center">
+                <div class="row align-items-center">
+                    <div class="col-6">
+                        <img [src]="getWeatherIcon(currentWeather.weather[0].icon)"
+                            [alt]="currentWeather.weather[0].description" class="img-fluid">
+                        <h5 class="text-capitalize">
+                            {{ currentWeather.weather[0].description }}
+                        </h5>
+                    </div>
+                    <div class="col-6">
+                        <h2 class="display-4">{{ currentWeather.main.temp | number:'1.0-0' }}°C</h2>
+                        <p class="mb-1">
+                            Ressenti: {{ currentWeather.main.feels_like | number:'1.0-0' }}°C
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    💧 Humidité: {{ currentWeather.main.humidity }}%
+                </li>
+                <li class="list-group-item">
+                    💨 Vent: {{ currentWeather.wind.speed | number:'1.0-0' }} km/h
+                </li>
+                <li class="list-group-item">
+                    📊 Pression: {{ currentWeather.main.pressure }} hPa
+                </li>
+                <!-- Lever/coucher du soleil formatés -->
+                <li class="list-group-item">
+                    🌅 Lever: {{ currentWeather.sys.sunrise * 1000 | date:'H:mm' }}
+                </li>
+                <li class="list-group-item">
+                    🌇 Coucher: {{ currentWeather.sys.sunset * 1000 | date:'H:mm' }}
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Prévisions sur 5 jours - Dates formatées -->
+<div *ngIf="fiveDayForecast && !loading" class="mt-4">
+    <h4>📅 Prévisions sur 5 jours</h4>
+    <div class="row">
+        <div *ngFor="let day of getGroupedForecasts(); let i = index" class="col-lg-2 col-md-4 col-sm-6 mb-3">
+            <div class="card h-100 text-center">
+                <!-- Date formatée pour les prévisions -->
+                <div class="card-header bg-light">
+                    <strong>{{ day.date | date:'EEE d' }}</strong>
+                    <br>
+                    <small class="text-muted">{{ day.date | date:'LLL' }}</small>
+                </div>
+                <div class="card-body">
+                    <img *ngIf="day.forecasts[0]?.weather[0]" [src]="getWeatherIcon(day.forecasts[0].weather[0].icon)"
+                        [alt]="day.forecasts[0].weather[0].description" class="img-fluid mb-2">
+                    <h6 *ngIf="day.forecasts[0]?.weather[0]" class="text-capitalize small">
+                        {{ day.forecasts[0].weather[0].description }}
+                    </h6>
+                    <div *ngIf="day.forecasts[0]?.main" class="temperature">
+                        <strong>{{ day.forecasts[0].main.temp_max | number:'1.0-0' }}°C</strong> /
+                        {{ day.forecasts[0].main.temp_min | number:'1.0-0' }}°C
+                    </div>
+                    <!-- Heure de la prévision -->
+                    <small class="text-muted">
+                        {{ day.forecasts[0].dt * 1000 | date:'H:mm' }}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

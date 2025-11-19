@@ -1,0 +1,71 @@
+<!-- Fil d'Ariane -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item active" aria-current="page">🏠 Accueil</li>
+    </ol>
+</nav>
+
+<!-- Formulaire de recherche -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">🔍 Ajouter une ville</h5>
+    </div>
+    <div class="card-body">
+        <form (ngSubmit)="onSubmit()" #cityForm="ngForm">
+            <div class="input-group">
+                <input type="search" placeholder="Entrez le nom d'une ville..." id="name" name="name"
+                    class="form-control" required minlength="3" [(ngModel)]="city.name" #name="ngModel" />
+                <div class="input-group-append">
+                    <button class="btn btn-primary" type="submit" [disabled]="!name.valid">
+                        ➕ Ajouter
+                    </button>
+                </div>
+            </div>
+
+            <!-- Indicateur de longueur -->
+            <small *ngIf="city.name" class="form-text text-muted mt-1">
+                {{ city.name.length }} caractères
+            </small>
+
+            <!-- Messages d'erreur -->
+            <div *ngIf="name.invalid && (name.dirty || name.touched)" class="alert alert-danger mt-2">
+                <div *ngIf="name.errors?.['required']">
+                    ❌ La saisie de la ville est obligatoire
+                </div>
+                <div *ngIf="name.errors?.['minlength']">
+                    ❌ Le nom doit contenir au moins 3 caractères
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<hr>
+
+<!-- Liste des villes -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">📋 Liste des villes ({{ cityList.length }})</h5>
+    </div>
+    <div class="card-body">
+        <!-- Message si liste vide -->
+        <div *ngIf="cityList.length === 0" class="alert alert-info text-center">
+            📝 Aucune ville ajoutée. Commencez par ajouter une ville ci-dessus !
+        </div>
+
+        <!-- Liste des villes -->
+        <ul class="list-group">
+            <li *ngFor="let city of cityList" class="list-group-item d-flex justify-content-between align-items-center">
+                <!-- Lien vers la page détail -->
+                <a [routerLink]="['/meteo', city.name]" class="flex-grow-1 text-decoration-none">
+                    <strong>{{ city.name }}</strong>
+                </a>
+
+                <!-- Bouton de suppression -->
+                <button (click)="remove(city)" class="btn btn-outline-danger btn-sm ml-2" title="Supprimer de la liste">
+                    🗑️
+                </button>
+            </li>
+        </ul>
+    </div>
+</div>
